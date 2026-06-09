@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SURFactory — Project Dashboard</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; background: #f4f3ef; color: #1a1a18; }
+
+/* Header */
+.header { background: #1F4E79; color: #fff; padding: 24px 32px; display: flex; align-items: center; justify-content: space-between; }
+.header h1 { font-size: 22px; font-weight: 700; }
+.header .sub { font-size: 12px; color: #93b8d4; margin-top: 4px; }
+.deadline-badge { background: #E8593C; color: #fff; border-radius: 10px; padding: 8px 18px; text-align: center; }
+.deadline-badge .days { font-size: 28px; font-weight: 700; }
+.deadline-badge .label { font-size: 11px; }
+
+/* Nav tabs */
+.tabs { background: #fff; border-bottom: 1px solid #e0ddd6; padding: 0 32px; display: flex; gap: 0; }
+.tab { padding: 14px 20px; font-size: 13px; font-weight: 500; cursor: pointer; border-bottom: 3px solid transparent; color: #666; white-space: nowrap; }
+.tab.active { border-bottom-color: #1F4E79; color: #1F4E79; }
+.tab:hover:not(.active) { color: #333; }
+
+/* Content */
+.content { display: none; padding: 28px 32px; max-width: 1100px; }
+.content.active { display: block; }
+
+/* Cards */
+.card { background: #fff; border-radius: 12px; border: 1px solid #e0ddd6; padding: 22px 24px; margin-bottom: 18px; }
+.card-title { font-size: 14px; font-weight: 600; color: #1F4E79; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.card-title .icon { width: 20px; height: 20px; background: #E6F1FB; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+
+/* Grid */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+@media(max-width:700px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+/* Status items */
+.status-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0ede6; }
+.status-item:last-child { border-bottom: none; }
+.status-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+.dot-green { background: #3B6D11; }
+.dot-amber { background: #BA7517; }
+.dot-red { background: #A32D2D; }
+.dot-gray { background: #888780; }
+.status-text { font-size: 13px; line-height: 1.5; }
+.status-text strong { font-weight: 600; display: block; margin-bottom: 2px; }
+.status-text span { color: #666; font-size: 12px; }
+
+/* WP cards */
+.wp-card { border-radius: 10px; padding: 16px; border: 1px solid; margin-bottom: 12px; }
+.wp-teal { background: #E1F5EE; border-color: #1D9E75; }
+.wp-purple { background: #EEEDFE; border-color: #534AB7; }
+.wp-green { background: #EAF3DE; border-color: #3B6D11; }
+.wp-amber { background: #FAEEDA; border-color: #BA7517; }
+.wp-coral { background: #FAECE7; border-color: #993C1D; }
+.wp-card h3 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.wp-card .wp-meta { font-size: 11px; color: #666; margin-bottom: 8px; }
+.wp-card p { font-size: 12px; line-height: 1.6; color: #333; }
+.wp-tag { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 10px; margin-right: 4px; margin-top: 6px; font-weight: 600; }
+.tag-teal { background: #9FE1CB; color: #04342C; }
+.tag-purple { background: #AFA9EC; color: #26215C; }
+.tag-green { background: #C0DD97; color: #173404; }
+.tag-amber { background: #FAC775; color: #412402; }
+
+/* KPI table */
+.kpi-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.kpi-table th { background: #1F4E79; color: #fff; padding: 10px 14px; text-align: left; font-weight: 600; }
+.kpi-table td { padding: 9px 14px; border-bottom: 1px solid #f0ede6; vertical-align: top; }
+.kpi-table tr:last-child td { border-bottom: none; }
+.kpi-table tr:nth-child(even) td { background: #f8f7f4; }
+.kpi-r { font-weight: 700; color: #1F4E79; white-space: nowrap; }
+.kpi-val { color: #1D9E75; font-weight: 600; font-size: 12px; }
+
+/* Timeline */
+.timeline { position: relative; padding-left: 24px; }
+.timeline::before { content:''; position:absolute; left:7px; top:0; bottom:0; width:2px; background:#e0ddd6; }
+.tl-item { position: relative; margin-bottom: 20px; }
+.tl-dot { position: absolute; left: -20px; top: 3px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; }
+.tl-done { background: #1D9E75; }
+.tl-now { background: #1F4E79; box-shadow: 0 0 0 3px #93b8d4; }
+.tl-todo { background: #D3D1C7; }
+.tl-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.tl-date { font-size: 11px; color: #888; margin-bottom: 4px; }
+.tl-desc { font-size: 12px; color: #555; line-height: 1.5; }
+
+/* Partners */
+.partner-row { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; border-bottom: 1px solid #f0ede6; }
+.partner-row:last-child { border-bottom: none; }
+.partner-badge { min-width: 48px; text-align: center; }
+.partner-badge .num { font-size: 11px; font-weight: 700; color: #fff; background: #1F4E79; border-radius: 6px; padding: 3px 7px; }
+.partner-badge .country { font-size: 10px; color: #888; margin-top: 3px; }
+.partner-info h4 { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.partner-info p { font-size: 12px; color: #555; line-height: 1.5; }
+.partner-info .role { display: inline-block; font-size: 10px; padding: 2px 8px; background: #E6F1FB; color: #0C447C; border-radius: 10px; margin-top: 4px; font-weight: 600; }
+.tbc { background: #FAEEDA; color: #412402; }
+
+/* Gaps */
+.gap-item { display: flex; gap: 12px; padding: 12px 14px; border-radius: 8px; margin-bottom: 8px; align-items: flex-start; }
+.gap-urgent { background: #FCEBEB; border-left: 3px solid #E24B4A; }
+.gap-medium { background: #FAEEDA; border-left: 3px solid #BA7517; }
+.gap-low { background: #EAF3DE; border-left: 3px solid #3B6D11; }
+.gap-item .glabel { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; min-width: 48px; margin-top: 1px; }
+.gap-urgent .glabel { color: #A32D2D; }
+.gap-medium .glabel { color: #BA7517; }
+.gap-low .glabel { color: #3B6D11; }
+.gap-item .gtext { font-size: 13px; line-height: 1.5; }
+.gap-item .gtext strong { font-weight: 600; display: block; }
+.gap-item .gtext span { color: #666; font-size: 12px; }
+
+/* Progress bar */
+.progress-wrap { margin-bottom: 14px; }
+.progress-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
+.progress-label span:first-child { font-weight: 600; }
+.progress-label span:last-child { color: #1D9E75; font-weight: 600; }
+.progress-bar { height: 8px; background: #e0ddd6; border-radius: 4px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 4px; background: #1F4E79; transition: width 0.6s ease; }
+.progress-fill.green { background: #1D9E75; }
+.progress-fill.amber { background: #BA7517; }
+.progress-fill.red { background: #E24B4A; }
+
+/* Stat boxes */
+.stat-box { text-align: center; padding: 16px; background: #f8f7f4; border-radius: 10px; border: 1px solid #e0ddd6; }
+.stat-box .val { font-size: 28px; font-weight: 700; color: #1F4E79; }
+.stat-box .lbl { font-size: 11px; color: #666; margin-top: 4px; }
+
+/* Summary notes */
+.note { background: #E6F1FB; border-left: 3px solid #185FA5; border-radius: 0 8px 8px 0; padding: 12px 16px; font-size: 13px; line-height: 1.6; margin-bottom: 12px; }
+.note strong { color: #1F4E79; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>SURFactory</h1>
+    <div class="sub">HORIZON-CL6-2026-01-CIRCBIO-07 &nbsp;·&nbsp; Prepared by InventionBio S.A. | WP2 Leader &nbsp;·&nbsp; June 2026</div>
+  </div>
+  <div class="deadline-badge">
+    <div class="days">100</div>
+    <div class="label">days to deadline<br>17 Sep 2026</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('overview')">Overview</div>
+  <div class="tab" onclick="showTab('status')">Proposal status</div>
+  <div class="tab" onclick="showTab('wps')">Work packages</div>
+  <div class="tab" onclick="showTab('kpis')">KPIs &amp; results</div>
+  <div class="tab" onclick="showTab('partners')">Consortium</div>
+  <div class="tab" onclick="showTab('gaps')">Open gaps</div>
+  <div class="tab" onclick="showTab('timeline')">Timeline</div>
+  <div class="tab" onclick="showTab('diagrams')">Diagrams</div>
+  <div class="tab" onclick="showTab('efqm')">EFQM</div>
+  <div class="tab" onclick="showTab('profiles')">Partner profiles</div>
+</div>
+
+<!-- OVERVIEW -->
+<div class="content active" id="tab-overview">
+  <div class="note"><strong>What is SURFactory?</strong> A European industrial competitiveness project that transforms circular biosurfactant production from laboratory science into scalable, economically viable industrial reality for European SMEs — enabled by a validated hybrid Digital Twin and pilot-scale demonstration.</div>
+
+  <div class="grid-3" style="margin-bottom:18px">
+    <div class="stat-box"><div class="val">€4M</div><div class="lbl">Indicative EU contribution</div></div>
+    <div class="stat-box"><div class="val">TRL 4–5</div><div class="lbl">Call target (activities may start lower)</div></div>
+    <div class="stat-box"><div class="val">36 mo</div><div class="lbl">Project duration (estimated)</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Three core problems addressed</div>
+      <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Scale-up gap</strong><span>Lab-validated processes fail at pilot scale due to biological variability and insufficient process intelligence. Oxygen transfer limitation is an active bottleneck at the current 300L pilot.</span></div></div>
+      <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Digital tools gap</strong><span>Enterprise-grade Digital Twin platforms (Siemens, AVEVA, AspenTech) are too expensive and complex for European bio-based SMEs working with variable feedstocks.</span></div></div>
+      <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Circular feedstock gap</strong><span>Variable substrates (lignocellulosic hydrolysates, food surplus, acetogenates) are operationally unstable. No validated Digital Twin addresses this configuration.</span></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Three strategic differentiators</div>
+      <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Hohenheim biochemical model</strong><span>Existing validated mechanistic model of surfactin biosynthesis — serves as the Digital Twin core. No competitor has this asset.</span></div></div>
+      <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>BACIPRO exploitation pathway</strong><span>Parallel EU project (July 2025) developing Bacillus-based agricultural products — provides direct TRL 7 route and end-user base for surfactin formulations.</span></div></div>
+      <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>SME-deployable architecture</strong><span>Digital Twin designed for deployment without external consultants: open standards, FAIR data, modular toolkit. Target payback: 12–24 months.</span></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Proposal writing progress</div>
+    <div class="progress-wrap"><div class="progress-label"><span>Abstract</span><span>100%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:100%"></div></div></div>
+    <div class="progress-wrap"><div class="progress-label"><span>1.1 Objectives and ambition</span><span>85%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:85%"></div></div></div>
+    <div class="progress-wrap"><div class="progress-label"><span>1.2 Methodology</span><span>90%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:90%"></div></div></div>
+    <div class="progress-wrap"><div class="progress-label"><span>2. Impact</span><span>80%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:80%"></div></div></div>
+    <div class="progress-wrap"><div class="progress-label"><span>WP2 full description</span><span>95%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:95%"></div></div></div>
+    <div class="progress-wrap"><div class="progress-label"><span>USP vs SurfToGreen / SURFs UP</span><span>0%</span></div><div class="progress-bar"><div class="progress-fill red" style="width:5%"></div></div></div>
+    <div class="progress-wrap"><div class="progress-label"><span>Nature-based Solutions section</span><span>10%</span></div><div class="progress-bar"><div class="progress-fill red" style="width:10%"></div></div></div>
+    <div class="progress-wrap"><div class="progress-label"><span>Cooperation with parallel projects</span><span>20%</span></div><div class="progress-bar"><div class="progress-fill amber" style="width:20%"></div></div></div>
+    <div class="progress-wrap"><div class="progress-label"><span>WP1, WP3, WP4, WP5 descriptions</span><span>30%</span></div><div class="progress-bar"><div class="progress-fill amber" style="width:30%"></div></div></div>
+    <div class="progress-wrap"><div class="progress-label"><span>Budget and Part A</span><span>10%</span></div><div class="progress-bar"><div class="progress-fill red" style="width:10%"></div></div></div>
+    <div class="progress-wrap"><div class="progress-label"><span>Consortium — TBC partners</span><span>20%</span></div><div class="progress-bar"><div class="progress-fill red" style="width:20%"></div></div></div>
+  </div>
+</div>
+
+<!-- PROPOSAL STATUS -->
+<div class="content" id="tab-status">
+  <div class="card">
+    <div class="card-title">Completed sections</div>
+    <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Abstract (v3)</strong><span>Positions SURFactory as European industrial competitiveness project, not Digital Twin project. Includes BACIPRO pathway, surfactin + rhamnolipids, TRL 5–6 → 7.</span></div></div>
+    <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>1.1 Objectives and ambition</strong><span>Three gaps, three strategic choices, five specific objectives O1–O5 with KPI targets from professor's baseline data (titre 46.33 g/L, STY 2.11 g/L·h).</span></div></div>
+    <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>1.2 Methodology</strong><span>DBTL + hybrid Digital Twin + EFQM/RADAR. Oxygen transfer, DSP, nutrient-loop closure, circular feedstocks, SSbD/DNSH integration. Three DBTL cycles described.</span></div></div>
+    <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>2. Impact (full)</strong><span>Scientific + socioeconomic + environmental + policy. Benchmark: 0.25–0.70 M EUR/site/year, payback 12–24 months (scenario benchmarks, to be validated by WP4 TEA).</span></div></div>
+    <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>WP2 full description</strong><span>T2.1–T2.4, deliverables D2.1–D2.4, milestones MS2.1–MS2.4, KPI linkage R1–R6. Fed-batch with continuous surfactin removal. OT/IT security framework included.</span></div></div>
+    <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Results table R1–R6</strong><span>Full KPI table with professor's baseline numbers and project targets.</span></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Sections requiring work — priority order</div>
+    <div class="gap-item gap-urgent"><div class="glabel">URGENT</div><div class="gtext"><strong>USP vs SurfToGreen and SURFs UP</strong><span>Call evaluator will look for this. SurfToGreen: 9M EUR, 16 partners, Oct 2024–Sep 2029, CBE JU, focus on nonionic/anionic/cationic surfactant families from agricultural/forest side streams. SURFs UP: 150L–10m³ scale, hardwood + food waste, home/personal care. SURFactory USP: quasi-stationary Digital Twin control + autonomous stop/restart + circular nutrient loop + SME toolkit. Needs 1 paragraph in section 1.1.</span></div></div>
+    <div class="gap-item gap-urgent"><div class="glabel">URGENT</div><div class="gtext"><strong>Nature-based Solutions section</strong><span>Call requires NbS convergence with biotech. Surfactin as biostimulant in regenerative agriculture is the natural connection. Needs explicit paragraph linking biosurfactants to NbS framework (soil health, biodiversity, ecosystem services).</span></div></div>
+    <div class="gap-item gap-urgent"><div class="glabel">URGENT</div><div class="gtext"><strong>TRL correction throughout document</strong><span>Call states TRL 4–5. Our document uses TRL 5–6. Needs correction with note that activities start at TRL 3–4 and reach TRL 4–5 by end of project. TRL 6 can be framed as stretch target / early exploitation.</span></div></div>
+    <div class="gap-item gap-medium"><div class="glabel">MEDIUM</div><div class="gtext"><strong>Cooperation with parallel projects</strong><span>Call requires specific task + resource allocation for synergies with CIRCBIO-10 and listed projects. List of relevant projects available. Text needed: iCulture, DeCYPher, CircuIH2, ROBUSTOO, BIOLEAD + SurfToGreen, SURFs UP.</span></div></div>
+    <div class="gap-item gap-medium"><div class="glabel">MEDIUM</div><div class="gtext"><strong>IBISBA research infrastructure</strong><span>Most relevant infrastructure for SURFactory (industrial biotech, bioprocess scale-up). Should appear in methodology or implementation section. ELIXIR also relevant for FAIR data and omics.</span></div></div>
+    <div class="gap-item gap-medium"><div class="glabel">MEDIUM</div><div class="gtext"><strong>WP1, WP3, WP4, WP5 descriptions</strong><span>WP2 is complete. Other WPs exist only at outline level. Need Tasks / Deliverables / Milestones for each.</span></div></div>
+    <div class="gap-item gap-low"><div class="glabel">LATER</div><div class="gtext"><strong>Budget and Part A</strong><span>Preliminary budget needed by 90–60 days before deadline (mid-June / July). Partner details (PIC numbers) needed for Part A registration.</span></div></div>
+    <div class="gap-item gap-low"><div class="glabel">LATER</div><div class="gtext"><strong>TBC partners: FR/ES/IT RTO, ecotox institute, agronomy partner</strong><span>Three slots still open. Required for WP4 (SSbD/LCA/TEA) and environmental fate screening. Without these the sustainability section remains incomplete.</span></div></div>
+  </div>
+</div>
+
+<!-- WORK PACKAGES -->
+<div class="content" id="tab-wps">
+  <div class="note"><strong>WP structure follows call requirements:</strong> process biology (WP1) → Digital Twin (WP2) → pilot validation (WP3) → sustainability (WP4) → dissemination/SME replication (WP5).</div>
+
+  <div class="wp-card wp-teal">
+    <h3>WP1 — Process Biology and Strain Development</h3>
+    <div class="wp-meta">Lead: University of Hohenheim (DE) · M1–M36</div>
+    <p>Metabolic and synthetic biology optimisation of Bacillus subtilis (surfactin) and Pseudomonas putida (rhamnolipids). Genome engineering, feedstock characterisation (lignocellulosic hydrolysates, food surplus, acetogenates). Validates strain performance in lab-scale bioreactors. Provides biochemical model of surfactin biosynthesis as mechanistic core for WP2 Digital Twin.</p>
+    <span class="wp-tag tag-teal">Surfactin</span><span class="wp-tag tag-teal">Rhamnolipids</span><span class="wp-tag tag-teal">Circular feedstocks</span><span class="wp-tag tag-teal">Biochemical model</span>
+  </div>
+
+  <div class="wp-card wp-purple">
+    <h3>WP2 — Digital Twin Architecture, Integration and Validation ✓ COMPLETE</h3>
+    <div class="wp-meta">Lead: InventionBio S.A. (PL) · M1–M36</div>
+    <p>Hybrid mechanistic + AI/ML Digital Twin. Integrates Hohenheim biochemical model. Four tasks: pilot data infrastructure (T2.1), model development TRL 5 (T2.2), autonomous function validation TRL 6 (T2.3), SME replication toolkit (T2.4). Fed-batch with continuous surfactin removal. Oxygen transfer management. NIS2-compliant OT/IT security framework.</p>
+    <span class="wp-tag tag-purple">TRL 5→6</span><span class="wp-tag tag-purple">Autonomous control</span><span class="wp-tag tag-purple">DBTL loop</span><span class="wp-tag tag-purple">SME toolkit</span>
+  </div>
+
+  <div class="wp-card wp-teal">
+    <h3>WP3 — Pilot Demonstration and Process Integration</h3>
+    <div class="wp-meta">Lead: InventionBio (PL) · M6–M36</div>
+    <p>300L pilot bioreactor campaigns (Siemens ET200SP / Profinet). Three DBTL cycles with increasing complexity. Continuous DSP: cell separation, membrane filtration, biosurfactant concentration. Validates Digital Twin outputs under industrial-relevant conditions. Provides process data for model calibration.</p>
+    <span class="wp-tag tag-teal">300L pilot</span><span class="wp-tag tag-teal">DSP</span><span class="wp-tag tag-teal">3 campaigns</span>
+  </div>
+
+  <div class="wp-card wp-green">
+    <h3>WP4 — Sustainability by Design</h3>
+    <div class="wp-meta">Lead: TBC FR/ES/IT RTO · M3–M36</div>
+    <p>Prospective LCA/TEA and SSbD/DNSH assessment. Environmental fate and ecotoxicology screening. Baseline locked at M6. Target: ≥25–40% improvement vs baseline. Nutrient-loop closure quantification (N+P+S recovery ~0%→≥70%). Benchmarking against petrochemical surfactants and SurfToGreen/SURFs UP.</p>
+    <span class="wp-tag tag-green">LCA/TEA</span><span class="wp-tag tag-green">SSbD/DNSH</span><span class="wp-tag tag-green">Ecotox</span>
+  </div>
+
+  <div class="wp-card wp-amber">
+    <h3>WP5 — Dissemination, Policy and SME Replication</h3>
+    <div class="wp-meta">Lead: Wroclaw University of Economics (PL) · M1–M36</div>
+    <p>Open Innovation Access Programme (2 open-call waves). Policy Labs (mid-term, late-term, final). EFQM/RADAR performance management via Wroclaw UE Foundation. SSH engagement: NGOs, consumer organisations, growers' associations. Target: ≥8 external SMEs, ≥50–60% non-Polish, ≥3 policy briefs.</p>
+    <span class="wp-tag tag-amber">Open calls</span><span class="wp-tag tag-amber">Policy labs</span><span class="wp-tag tag-amber">EFQM/RADAR</span><span class="wp-tag tag-amber">SME replication</span>
+  </div>
+</div>
+
+<!-- KPIs -->
+<div class="content" id="tab-kpis">
+  <div class="note"><strong>Baseline values</strong> from InventionBio pilot data: surfactin titre 46.33 g/L, STY 2.11 g/(L·h). Pilot targets are intentionally conservative to account for scale-up losses. All financial benchmarks to be validated by WP4 TEA.</div>
+
+  <div class="card">
+    <div class="card-title">Results R1–R6 with KPIs</div>
+    <table class="kpi-table">
+      <tr><th style="width:60px">Result</th><th>Description</th><th>Key indicators (baseline → target)</th></tr>
+      <tr><td class="kpi-r">R1</td><td>Validated Digital Twin + PAT/soft-sensor stack</td><td class="kpi-val">CV reduced ≥30% · ≥3 consecutive autonomous cycles</td></tr>
+      <tr><td class="kpi-r">R2</td><td>Surfactin pilot production under autonomy</td><td class="kpi-val">Titre: 46.33 → ≥40 g/L · STY: 2.11 → ≥1.5 g/(L·h)</td></tr>
+      <tr><td class="kpi-r">R3</td><td>Circular feedstock qualification</td><td class="kpi-val">≥80% performance on ≥1 circular feedstock (≥37 g/L eq.)</td></tr>
+      <tr><td class="kpi-r">R4</td><td>Nutrient-loop closure N/P/S + circular DSP</td><td class="kpi-val">N+P+S recovery: ~0% → ≥70% · virgin N/P reduction ≥20%</td></tr>
+      <tr><td class="kpi-r">R5</td><td>SSbD/DNSH evidence package + LCA/TEA + ecotox</td><td class="kpi-val">≥25–40% improvement vs baseline (locked M6)</td></tr>
+      <tr><td class="kpi-r">R6</td><td>Open calls + EFQM/RADAR toolkit + policy briefs</td><td class="kpi-val">≥8 SMEs · ≥50–60% non-Polish · ≥2 adoption cases · ≥3 policy briefs</td></tr>
+    </table>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Economic impact benchmarks</div>
+      <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Annual value per site</strong><span>0.25–0.70 M EUR / average production site or line (conservative scenario benchmark from bioprocess digitalisation literature)</span></div></div>
+      <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Payback period</strong><span>12–24 months at deployment cost 0.30–0.60 M EUR per site</span></div></div>
+      <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Sector multiplier at 25 sites</strong><span>6.25–17.5 M EUR annual sector value</span></div></div>
+      <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Sector multiplier at 50 sites</strong><span>12.5–35 M EUR annual sector value</span></div></div>
+      <div class="note" style="margin-top:12px;margin-bottom:0;font-size:12px">⚠ These are scenario benchmarks — to be validated by WP4 TEA using actual pilot campaign data. Not to be used as guaranteed financial projections in external communications.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Environmental targets</div>
+      <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Carbon footprint</strong><span>25–40% reduction vs conventional bioprocess baseline (LCA, WP4)</span></div></div>
+      <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Nutrient recovery</strong><span>N+P+S recovery from ~0% to ≥70%; virgin N/P reduction ≥20%</span></div></div>
+      <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Feedstock circularity</strong><span>≥80% process performance on ≥1 circular/variable feedstock at ≥37 g/L equivalent</span></div></div>
+      <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Palm oil substitution</strong><span>Quantified via comparative LCA against petrochemical and palm-oil-based surfactant production</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PARTNERS -->
+<div class="content" id="tab-partners">
+  <div class="note"><strong>Consortium status:</strong> 5 confirmed beneficiaries + 3 TBC slots (sustainability, ecotox, agronomy). TBC partners should ideally come from FR, ES or IT to balance Polish majority. Without WP4 lead the sustainability section remains incomplete.</div>
+
+  <div class="card">
+    <div class="card-title">Confirmed beneficiaries</div>
+    <div class="partner-row">
+      <div class="partner-badge"><div class="num">1</div><div class="country">DE</div></div>
+      <div class="partner-info"><h4>University of Hohenheim</h4><p>Coordinator. WP1 lead. Synbio, strain development, process performance, circular feedstock robustness. Holds validated biochemical model of surfactin biosynthesis — mechanistic core of WP2 Digital Twin.</p><span class="role">Coordinator · WP1</span></div>
+    </div>
+    <div class="partner-row">
+      <div class="partner-badge"><div class="num">2</div><div class="country">PL</div></div>
+      <div class="partner-info"><h4>InventionBio S.A. — WP2 &amp; WP3</h4><p>WP2 lead (Digital Twin — WP2 Lead (InventionBio S.A.)) + WP3 lead (pilot 300L). Digital Twin architecture, AI/ML, OT/IT integration. Pilot campaigns, process data, scale-up validation.</p><span class="role">WP2 Leader</span></div>
+    </div>
+    <div class="partner-row">
+      <div class="partner-badge"><div class="num">3</div><div class="country">PL</div></div>
+      <div class="partner-info"><h4>InventionBio</h4><p>WP3 lead. Pilot-scale validation and process integration. 300L pilot bioreactor (Siemens ET200SP / Profinet) in Bydgoszcz. Scale-up-oriented bioprocess capabilities. Provides process data for Digital Twin calibration.</p><span class="role">WP3 Leader</span></div>
+    </div>
+    <div class="partner-row">
+      <div class="partner-badge"><div class="num">4</div><div class="country">UK</div></div>
+      <div class="partner-info"><h4>Holiferm Ltd</h4><p>Industrial biosurfactant expertise. Contributes to downstream processing and process integration (WP3–WP4 interface). Exploitation strategy and market pathway for biosurfactant products.</p><span class="role">WP3–WP4 interface</span></div>
+    </div>
+    <div class="partner-row">
+      <div class="partner-badge"><div class="num">5</div><div class="country">PL</div></div>
+      <div class="partner-info"><h4>Wroclaw University of Economics</h4><p>WP5 lead. SSH, TEA, policy pathway, stakeholder involvement, open calls governance, policy recommendations. Linked third party: Wroclaw UE Foundation (EFQM/RADAR, student living labs).</p><span class="role">WP5 Leader</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">TBC slots — to be confirmed</div>
+    <div class="partner-row">
+      <div class="partner-badge"><div class="num">TBC</div><div class="country">FR/ES/IT</div></div>
+      <div class="partner-info"><h4>[RTO or University] — WP4 Lead</h4><p>Safe-and-Sustainable-by-Design, prospective LCA/TEA, DNSH alignment. Critical for sustainability section of proposal. Without this partner WP4 cannot be completed.</p><span class="role tbc">URGENT — WP4 Lead</span></div>
+    </div>
+    <div class="partner-row">
+      <div class="partner-badge"><div class="num">TBC</div><div class="country">FR/ES/IT</div></div>
+      <div class="partner-info"><h4>[Research Institute] — Environmental fate &amp; ecotox</h4><p>Environmental fate and ecotoxicology screening for agricultural deployment. Supports WP4 and validation work. Required by call for DNSH compliance and agricultural safety evidence.</p><span class="role tbc">NEEDED — Ecotox</span></div>
+    </div>
+    <div class="partner-row">
+      <div class="partner-badge"><div class="num">OPT</div><div class="country">FR/ES/IT</div></div>
+      <div class="partner-info"><h4>[Agronomy partner] — Optional</h4><p>Greenhouse/field-relevant validation protocols, soil-health and biodiversity indicators. Strengthens EU-wide agricultural relevance and Nature-based Solutions narrative.</p><span class="role tbc">OPTIONAL — NbS / Agronomy</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Linked third party and associated partners</div>
+    <div class="partner-row">
+      <div class="partner-badge"><div class="num">LTP</div><div class="country">PL</div></div>
+      <div class="partner-info"><h4>Wroclaw University of Economics Foundation</h4><p>EFQM/RADAR societal and environmental performance management. Student-led living labs and challenge-based co-creation. Does not increase number of Polish beneficiaries.</p><span class="role">Linked third party</span></div>
+    </div>
+    <div class="partner-row">
+      <div class="partner-badge"><div class="num">AP</div><div class="country">PL</div></div>
+      <div class="partner-info"><h4>Association of Polish Nurserymen (SPS)</h4><p>End-user and growers' association. Requirements definition, validation protocols, stakeholder acceptance in agriculture.</p><span class="role">Associated partner</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- GAPS -->
+<div class="content" id="tab-gaps">
+  <div class="card">
+    <div class="card-title">🔴 Urgent — blocks proposal quality</div>
+    <div class="gap-item gap-urgent"><div class="glabel">1</div><div class="gtext"><strong>USP vs SurfToGreen and SURFs UP (section 1.1)</strong><span>SurfToGreen (CBE JU, €9M, 16 partners, Oct 2024–Sep 2029): focuses on nonionic/anionic/cationic families from agricultural/forest streams, no Digital Twin, no autonomous control. SURFs UP (CBE JU, 150L–10m³, hardwood + food waste): focuses on SSbD production criteria, no quasi-stationary operation. SURFactory USP: autonomous quasi-stationary Digital Twin + stop/restart + circular nutrient loop + SME replication toolkit. Needs ~300 words in 1.1.</span></div></div>
+    <div class="gap-item gap-urgent"><div class="glabel">2</div><div class="gtext"><strong>Nature-based Solutions (required by call scope)</strong><span>Call explicitly requires "convergence of biotech with Nature-based Solutions for environmental applications, carbon sequestration, biodiversity protection." Biosurfactants as biostimulants in regenerative agriculture = direct NbS application. Surfactin improves soil microbiome, plant growth, reduces synthetic pesticide use. Needs explicit paragraph + link to EU NbS policy framework. Optional: agronomy partner (TBC) strengthens this section.</span></div></div>
+    <div class="gap-item gap-urgent"><div class="glabel">3</div><div class="gtext"><strong>TRL correction: 4–5 not 5–6</strong><span>Call states "Activities are expected to achieve TRL 4–5 by end of project." Our document uses TRL 5–6. Needs systematic correction: Digital Twin reaches TRL 4–5 within project; TRL 6 is exploitation stretch target post-project via BACIPRO. This is not just cosmetic — evaluator will flag TRL inconsistency with call type (RIA, not IA).</span></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🟡 Medium priority — needed before first draft review</div>
+    <div class="gap-item gap-medium"><div class="glabel">4</div><div class="gtext"><strong>Cooperation with parallel projects (specific task required)</strong><span>Call requires "cooperation between all projects funded under this topic as a specific task, with allocation of resources, for synergies." Relevant projects: iCulture, DeCYPher (CIRCBIO-02-05), CircuIH2, ROBUSTOO (CIRCBIO-01), BIOLEAD (CIRCBIO-10), SurfToGreen, SURFs UP. Needs task in WP5 + ~200 words describing synergy mechanism (shared datasets, joint workshops, FAIR data exchange).</span></div></div>
+    <div class="gap-item gap-medium"><div class="glabel">5</div><div class="gtext"><strong>IBISBA research infrastructure</strong><span>Call encourages use of IBISBA (Industrial Biotechnology Innovation and Synthetic Biology Accelerator) — most relevant infrastructure for SURFactory. Provides bioprocess design/optimisation, pilot-scale labs, modelling. Should appear in WP2 or WP3 methodology. ELIXIR also relevant for FAIR data schemas and omics integration.</span></div></div>
+    <div class="gap-item gap-medium"><div class="glabel">6</div><div class="gtext"><strong>WP1, WP3, WP4, WP5 task descriptions</strong><span>WP2 is fully described (Tasks, Deliverables, Milestones, KPI linkage). WP1, WP3, WP4, WP5 exist only at outline level in the current Part B draft. Each needs: 3–5 tasks, 3–5 deliverables, 2–3 milestones.</span></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⚪ Later — needed before submission</div>
+    <div class="gap-item gap-low"><div class="glabel">7</div><div class="gtext"><strong>Budget preparation (preliminary by mid-June / July)</strong><span>According to recommended timeline, preliminary budget should be prepared at 90–60 days before deadline (mid-June to mid-July 2026). Budget allocation per partner needed by ~60 days before deadline.</span></div></div>
+    <div class="gap-item gap-low"><div class="glabel">8</div><div class="gtext"><strong>Part A registration and PIC numbers</strong><span>All partners need to be registered in the EU Funding and Tenders Portal and have valid PIC numbers. TBC partners block this step.</span></div></div>
+    <div class="gap-item gap-low"><div class="glabel">9</div><div class="gtext"><strong>TBC partner acquisition (WP4 lead, ecotox, optional agronomy)</strong><span>Three consortium slots remain open. Ideally FR/ES/IT partners to balance Polish majority. Without WP4 lead, sustainability section cannot be completed. Partner acquisition should be active now.</span></div></div>
+    <div class="gap-item gap-low"><div class="glabel">10</div><div class="gtext"><strong>SMART objectives table (Part B section 1.1)</strong><span>Part B template requires Specific/Measurable/Achievable/Relevant/Time-bound tables for each specific objective. O1–O5 are defined but not yet formatted in SMART table format.</span></div></div>
+  </div>
+</div>
+
+<!-- TIMELINE -->
+<div class="content" id="tab-timeline">
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Proposal preparation timeline</div>
+      <div class="timeline">
+        <div class="tl-item"><div class="tl-dot tl-done"></div><div class="tl-title">Project concept ✓</div><div class="tl-date">Completed — Jan 2026</div><div class="tl-desc">Initial concept, consortium structure, NDA prepared. SURFactory positioned as European competitiveness project.</div></div>
+        <div class="tl-item"><div class="tl-dot tl-done"></div><div class="tl-title">Strategic narrative ✓</div><div class="tl-date">Completed — Apr 2026</div><div class="tl-desc">Digital Twin repositioned as operational intelligence tool. Three market gaps defined. BACIPRO exploitation pathway integrated. KPIs locked with professor's baseline data.</div></div>
+        <div class="tl-item"><div class="tl-dot tl-done"></div><div class="tl-title">WP2 full description ✓</div><div class="tl-date">Completed — May/Jun 2026</div><div class="tl-desc">T2.1–T2.4, deliverables, milestones, KPI linkage. Fed-batch + continuous removal. OT/IT security. SME toolkit.</div></div>
+        <div class="tl-item"><div class="tl-dot tl-done"></div><div class="tl-title">Abstract + 1.1 + 1.2 + Impact ✓</div><div class="tl-date">Completed — Jun 2026</div><div class="tl-desc">Full draft v3 in Word. Results table R1–R6 with professor's KPI numbers.</div></div>
+        <div class="tl-item"><div class="tl-dot tl-now"></div><div class="tl-title">⬤ NOW — fill critical gaps</div><div class="tl-date">June–July 2026</div><div class="tl-desc">USP vs SurfToGreen/SURFs UP. NbS section. TRL correction. WP1/3/4/5 descriptions. Preliminary budget. Partner acquisition for TBC slots.</div></div>
+        <div class="tl-item"><div class="tl-dot tl-todo"></div><div class="tl-title">First draft review</div><div class="tl-date">~Aug 2026 (45–30 days before)</div><div class="tl-desc">Full draft circulated to consortium for review. Internal feedback round.</div></div>
+        <div class="tl-item"><div class="tl-dot tl-todo"></div><div class="tl-title">Revision + budget finalisation</div><div class="tl-date">~Aug–Sep 2026 (30–10 days before)</div><div class="tl-desc">Incorporate review comments. Finalise budget. Complete Part A.</div></div>
+        <div class="tl-item"><div class="tl-dot tl-todo"></div><div class="tl-title">Submission</div><div class="tl-date">17 September 2026, 17:00</div><div class="tl-desc">Submit via EU Funding and Tenders Portal.</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Project internal timeline (if funded)</div>
+      <div class="timeline">
+        <div class="tl-item"><div class="tl-dot tl-done"></div><div class="tl-title">M0 — Baseline lock</div><div class="tl-date">Month 0–6</div><div class="tl-desc">Asset inventory, data schema definition, KPI baseline measurements. Sustainability benchmark locked at M6 for LCA/TEA.</div></div>
+        <div class="tl-item"><div class="tl-dot tl-done"></div><div class="tl-title">M1–M9 — Data infrastructure</div><div class="tl-date">T2.1 milestone: M9</div><div class="tl-desc">Data acquisition layer operational. FAIR schema. Historian deployed. Continuous data streams from 300L pilot.</div></div>
+        <div class="tl-item"><div class="tl-dot tl-done"></div><div class="tl-title">M4–M18 — Model development TRL 5</div><div class="tl-date">T2.2 milestone: M18</div><div class="tl-desc">Hybrid DT calibrated on ≥2 historical campaigns. Hohenheim model integrated. Safe operating window defined.</div></div>
+        <div class="tl-item"><div class="tl-dot tl-now"></div><div class="tl-title">M12–M30 — Validation TRL 6</div><div class="tl-date">T2.3 milestone: M30</div><div class="tl-desc">≥3 pilot campaigns. Circular feedstock campaign. Agricultural prototype campaign. Autonomous functions validated.</div></div>
+        <div class="tl-item"><div class="tl-dot tl-todo"></div><div class="tl-title">M24–M36 — SME toolkit</div><div class="tl-date">T2.4 milestone: M36</div><div class="tl-desc">Replication toolkit. OT/IT security framework. Open Innovation Access Programme. ≥8 external SMEs engaged.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DIAGRAMS -->
+<div class="content" id="tab-diagrams">
+  <div class="note"><strong>Diagram 1</strong> — Project architecture and work package structure. <strong>Diagram 2</strong> — DBTL learning loop and Digital Twin calibration cycle. Hover over any element for details.</div>
+
+  <div class="card" style="margin-bottom:24px">
+    <div class="card-title">Diagram 1 — Project architecture and work package structure</div>
+    <svg viewBox="0 0 680 600" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
+      <defs>
+        <marker id="da1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <!-- Outer container -->
+      <rect x="20" y="16" width="640" height="564" rx="20" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="0.5"/>
+      <text x="340" y="46" text-anchor="middle" font-family="Arial" font-size="14" font-weight="600" fill="#444441">SURFactory — integrated project architecture</text>
+      <!-- WP1 -->
+      <g style="cursor:pointer" onclick="showDiagramTip(evt,'WP1 — Process Biology\nLed by University of Hohenheim (DE)\nStrain development, feedstock strategy, biochemical model of surfactin biosynthesis. Provides the mechanistic core for WP2 Digital Twin.')">
+        <rect x="44" y="68" width="172" height="82" rx="10" fill="#E1F5EE" stroke="#1D9E75" stroke-width="0.5"/>
+        <text x="130" y="97" text-anchor="middle" font-family="Arial" font-size="13" font-weight="600" fill="#085041">WP1</text>
+        <text x="130" y="114" text-anchor="middle" font-family="Arial" font-size="11" fill="#0F6E56">Process biology</text>
+        <text x="130" y="130" text-anchor="middle" font-family="Arial" font-size="11" fill="#0F6E56">Hohenheim (DE)</text>
+      </g>
+      <!-- WP3 -->
+      <g style="cursor:pointer" onclick="showDiagramTip(evt,'WP3 — Pilot Demonstration\nLed by InventionBio (PL)\n300L pilot bioreactor, Siemens ET200SP / Profinet. Provides real process data and validates Digital Twin outputs.')">
+        <rect x="464" y="68" width="172" height="82" rx="10" fill="#E1F5EE" stroke="#1D9E75" stroke-width="0.5"/>
+        <text x="550" y="97" text-anchor="middle" font-family="Arial" font-size="13" font-weight="600" fill="#085041">WP3</text>
+        <text x="550" y="114" text-anchor="middle" font-family="Arial" font-size="11" fill="#0F6E56">Pilot 300L</text>
+        <text x="550" y="130" text-anchor="middle" font-family="Arial" font-size="11" fill="#0F6E56">InventionBio (PL)</text>
+      </g>
+      <!-- WP2 Digital Twin -->
+      <g style="cursor:pointer" onclick="showDiagramTip(evt,'WP2 — Digital Twin (WP Leader)\nLed by InventionBio S.A. (PL) — Digital Twin: WP2 Lead (InventionBio S.A.)\nHybrid mechanistic + AI/ML. Integrates Hohenheim biochemical model. Validates autonomous functions: trend prediction, oxygen management, stop/restart, yield optimisation. TRL 4-5.')">
+        <rect x="216" y="222" width="248" height="116" rx="14" fill="#EEEDFE" stroke="#534AB7" stroke-width="1"/>
+        <text x="340" y="254" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#26215C">WP2 — Digital Twin</text>
+        <text x="340" y="273" text-anchor="middle" font-family="Arial" font-size="11" fill="#534AB7">Hybrid mechanistic + AI/ML</text>
+        <text x="340" y="290" text-anchor="middle" font-family="Arial" font-size="11" fill="#534AB7">Autonomous control · TRL 4–5</text>
+        <text x="340" y="307" text-anchor="middle" font-family="Arial" font-size="11" fill="#534AB7">InventionBio S.A. (PL)</text>
+        <text x="340" y="326" text-anchor="middle" font-family="Arial" font-size="11" fill="#3C3489">↻ DBTL learning loop</text>
+      </g>
+      <!-- WP4 -->
+      <g style="cursor:pointer" onclick="showDiagramTip(evt,'WP4 — Sustainability Assessment\nLed by TBC FR/ES/IT partner\nProspective LCA/TEA, SSbD/DNSH screening, environmental fate and ecotoxicology. Target: >=25-40% improvement vs baseline.')">
+        <rect x="44" y="444" width="172" height="82" rx="10" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.5"/>
+        <text x="130" y="473" text-anchor="middle" font-family="Arial" font-size="13" font-weight="600" fill="#173404">WP4</text>
+        <text x="130" y="490" text-anchor="middle" font-family="Arial" font-size="11" fill="#27500A">LCA / TEA / SSbD</text>
+        <text x="130" y="506" text-anchor="middle" font-family="Arial" font-size="11" fill="#27500A">TBC FR/ES/IT</text>
+      </g>
+      <!-- WP5 -->
+      <g style="cursor:pointer" onclick="showDiagramTip(evt,'WP5 — SME Replication and Policy\nLed by Wroclaw University of Economics (PL)\nOpen Innovation Access Programme (2 open calls). Policy Labs. EFQM/RADAR governance. Target: >=8 external SMEs, >=50-60% non-Polish, >=3 policy briefs.')">
+        <rect x="464" y="444" width="172" height="82" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/>
+        <text x="550" y="473" text-anchor="middle" font-family="Arial" font-size="13" font-weight="600" fill="#412402">WP5</text>
+        <text x="550" y="490" text-anchor="middle" font-family="Arial" font-size="11" fill="#633806">Open calls · Policy Labs</text>
+        <text x="550" y="506" text-anchor="middle" font-family="Arial" font-size="11" fill="#633806">Wroclaw UE (PL)</text>
+      </g>
+      <!-- BACIPRO -->
+      <g style="cursor:pointer" onclick="showDiagramTip(evt,'BACIPRO project (starting July 2025)\nSame core consortium\nDevelops next-generation Bacillus-based bioproducts for agriculture. Provides TRL 7 exploitation pathway for surfactin-based formulations validated in SURFactory.')">
+        <rect x="248" y="548" width="184" height="22" rx="8" fill="#FAECE7" stroke="#993C1D" stroke-width="0.5"/>
+        <text x="340" y="563" text-anchor="middle" font-family="Arial" font-size="11" font-weight="600" fill="#4A1B0C">BACIPRO → TRL 7 exploitation pathway</text>
+      </g>
+      <!-- Arrows -->
+      <path d="M216 109 L240 242" fill="none" stroke="#1D9E75" stroke-width="1" marker-end="url(#da1)"/>
+      <text x="200" y="182" text-anchor="middle" font-family="Arial" font-size="10" fill="#666">model +</text>
+      <text x="200" y="194" text-anchor="middle" font-family="Arial" font-size="10" fill="#666">strains</text>
+      <path d="M464 109 L440 242" fill="none" stroke="#1D9E75" stroke-width="1" marker-end="url(#da1)"/>
+      <text x="480" y="182" text-anchor="middle" font-family="Arial" font-size="10" fill="#666">process</text>
+      <text x="480" y="194" text-anchor="middle" font-family="Arial" font-size="10" fill="#666">data</text>
+      <path d="M232 222 L196 150" fill="none" stroke="#9F9AB8" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#da1)"/>
+      <path d="M448 222 L484 150" fill="none" stroke="#9F9AB8" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#da1)"/>
+      <path d="M258 338 L180 444" fill="none" stroke="#3B6D11" stroke-width="1" marker-end="url(#da1)"/>
+      <text x="185" y="398" text-anchor="middle" font-family="Arial" font-size="10" fill="#666">DBTL data</text>
+      <path d="M422 338 L500 444" fill="none" stroke="#BA7517" stroke-width="1" marker-end="url(#da1)"/>
+      <text x="495" y="398" text-anchor="middle" font-family="Arial" font-size="10" fill="#666">DT toolkit</text>
+      <path d="M340 338 L340 548" fill="none" stroke="#D85A30" stroke-width="1" stroke-dasharray="5 3" marker-end="url(#da1)"/>
+      <!-- Legend -->
+      <rect x="44" y="168" width="10" height="10" rx="2" fill="none" stroke="#9F9AB8" stroke-dasharray="4 3" stroke-width="1"/>
+      <text x="60" y="178" font-family="Arial" font-size="10" fill="#888">feedback / iteration</text>
+      <line x1="44" y1="196" x2="56" y2="196" stroke="#888" stroke-width="1" marker-end="url(#da1)"/>
+      <text x="60" y="200" font-family="Arial" font-size="10" fill="#888">data / deliverable flow</text>
+      <line x1="44" y1="214" x2="56" y2="214" stroke="#D85A30" stroke-width="1" stroke-dasharray="5 3" marker-end="url(#da1)"/>
+      <text x="60" y="218" font-family="Arial" font-size="10" fill="#888">exploitation pathway</text>
+    </svg>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Diagram 2 — DBTL learning loop and Digital Twin calibration cycle</div>
+    <svg viewBox="0 0 680 480" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
+      <defs>
+        <marker id="da2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <!-- DESIGN -->
+      <g style="cursor:pointer" onclick="showDiagramTip(evt,'Design phase\nBased on DT predictions and previous cycle: define strain variants, feeding strategies, oxygen management, feedstock combinations. Output: experimental plan for WP1 + WP3.')">
+        <rect x="40" y="56" width="160" height="80" rx="10" fill="#E1F5EE" stroke="#1D9E75" stroke-width="0.5"/>
+        <text x="120" y="85" text-anchor="middle" font-family="Arial" font-size="13" font-weight="600" fill="#085041">Design</text>
+        <text x="120" y="103" text-anchor="middle" font-family="Arial" font-size="11" fill="#0F6E56">Strain, feed strategy</text>
+        <text x="120" y="118" text-anchor="middle" font-family="Arial" font-size="11" fill="#0F6E56">DT predictions</text>
+      </g>
+      <!-- BUILD -->
+      <g style="cursor:pointer" onclick="showDiagramTip(evt,'Build phase\nStrains constructed or adapted (WP1). Process configured on 300L pilot (WP3). Data acquisition layer verified (WP2). PLC recipes updated. Feedstock prepared and characterised.')">
+        <rect x="480" y="56" width="160" height="80" rx="10" fill="#E1F5EE" stroke="#1D9E75" stroke-width="0.5"/>
+        <text x="560" y="85" text-anchor="middle" font-family="Arial" font-size="13" font-weight="600" fill="#085041">Build</text>
+        <text x="560" y="103" text-anchor="middle" font-family="Arial" font-size="11" fill="#0F6E56">Configure pilot</text>
+        <text x="560" y="118" text-anchor="middle" font-family="Arial" font-size="11" fill="#0F6E56">WP1 + WP3</text>
+      </g>
+      <!-- Digital Twin -->
+      <g style="cursor:pointer" onclick="showDiagramTip(evt,'Digital Twin — recalibration hub\nNew datasets loaded into calibration pipeline. Hohenheim biochemical model updated. AI/ML layer retrained. Safe operating window updated. KPIs evaluated. Findings inform next Design phase.')">
+        <rect x="226" y="156" width="228" height="110" rx="14" fill="#EEEDFE" stroke="#534AB7" stroke-width="1"/>
+        <text x="340" y="186" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#26215C">Digital Twin</text>
+        <text x="340" y="206" text-anchor="middle" font-family="Arial" font-size="11" fill="#534AB7">Recalibrate model</text>
+        <text x="340" y="223" text-anchor="middle" font-family="Arial" font-size="11" fill="#534AB7">Update safe operating window</text>
+        <text x="340" y="240" text-anchor="middle" font-family="Arial" font-size="11" fill="#3C3489">↻ continuous learning</text>
+        <text x="340" y="257" text-anchor="middle" font-family="Arial" font-size="11" fill="#534AB7">WP2 — InventionBio</text>
+      </g>
+      <!-- LEARN -->
+      <g style="cursor:pointer" onclick="showDiagramTip(evt,'Learn phase\nDatasets from Test loaded into DT pipeline (WP2). KPIs evaluated vs baselines (titre, STY, CV, oxygen, feedstock). Documented via EFQM/RADAR. Next DBTL cycle initiated.')">
+        <rect x="40" y="296" width="160" height="80" rx="10" fill="#E1F5EE" stroke="#1D9E75" stroke-width="0.5"/>
+        <text x="120" y="325" text-anchor="middle" font-family="Arial" font-size="13" font-weight="600" fill="#085041">Learn</text>
+        <text x="120" y="343" text-anchor="middle" font-family="Arial" font-size="11" fill="#0F6E56">Update KPIs</text>
+        <text x="120" y="358" text-anchor="middle" font-family="Arial" font-size="11" fill="#0F6E56">Next cycle design</text>
+      </g>
+      <!-- TEST -->
+      <g style="cursor:pointer" onclick="showDiagramTip(evt,'Test phase\nPilot campaigns on 300L bioreactor.\nOnline: temperature, pH, DO, off-gas CO2/O2, agitation, flow rates, dosing, foam level, pressure\nOffline PAT: biomass, surfactin/rhamnolipid titre, substrate composition\nOxygen transfer monitoring — critical bottleneck.')">
+        <rect x="480" y="296" width="160" height="80" rx="10" fill="#E1F5EE" stroke="#1D9E75" stroke-width="0.5"/>
+        <text x="560" y="325" text-anchor="middle" font-family="Arial" font-size="13" font-weight="600" fill="#085041">Test</text>
+        <text x="560" y="343" text-anchor="middle" font-family="Arial" font-size="11" fill="#0F6E56">Pilot campaigns</text>
+        <text x="560" y="358" text-anchor="middle" font-family="Arial" font-size="11" fill="#0F6E56">PAT + off-gas data</text>
+      </g>
+      <!-- Arrows -->
+      <line x1="200" y1="96" x2="480" y2="96" fill="none" stroke="#1D9E75" stroke-width="1" marker-end="url(#da2)"/>
+      <text x="340" y="88" text-anchor="middle" font-family="Arial" font-size="10" fill="#666">experimental plan</text>
+      <line x1="560" y1="136" x2="560" y2="296" fill="none" stroke="#1D9E75" stroke-width="1" marker-end="url(#da2)"/>
+      <path d="M480 336 L454 266" fill="none" stroke="#534AB7" stroke-width="1" marker-end="url(#da2)"/>
+      <text x="486" y="298" text-anchor="middle" font-family="Arial" font-size="10" fill="#666">datasets</text>
+      <path d="M226 222 L186 336" fill="none" stroke="#534AB7" stroke-width="1" marker-end="url(#da2)"/>
+      <text x="178" y="284" text-anchor="middle" font-family="Arial" font-size="10" fill="#666">updated model</text>
+      <line x1="120" y1="296" x2="120" y2="136" fill="none" stroke="#1D9E75" stroke-width="1" marker-end="url(#da2)"/>
+      <path d="M200 96 L284 156" fill="none" stroke="#9F9AB8" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#da2)"/>
+      <!-- Three cycles -->
+      <rect x="40" y="406" width="600" height="64" rx="10" fill="#F1EFE8" stroke="#D3D1C7" stroke-width="0.5"/>
+      <text x="340" y="424" text-anchor="middle" font-family="Arial" font-size="11" font-weight="600" fill="#444">Three progressive DBTL cycles</text>
+      <g style="cursor:pointer" onclick="showDiagramTip(evt,'Cycle 1 — M1 to M18\nPure substrate (glucose) baseline. Targets: surfactin titre >=40 g/L; STY >=1.5 g/(L·h); CV reduced >=30%. Establish baseline, validate data acquisition, calibrate mechanistic model.')">
+        <rect x="56" y="432" width="172" height="30" rx="8" fill="#D3D1C7" stroke="#888780" stroke-width="0.5"/>
+        <text x="142" y="451" text-anchor="middle" font-family="Arial" font-size="11" fill="#2C2C2A">Cycle 1 — pure substrate</text>
+      </g>
+      <g style="cursor:pointer" onclick="showDiagramTip(evt,'Cycle 2 — M12 to M24\nVariable and circular feedstocks: lignocellulosic hydrolysates, food surplus, acetogenates. Target: >=80% performance retention (>=37 g/L equivalent). AI/ML stress-tested.')">
+        <rect x="254" y="432" width="172" height="30" rx="8" fill="#D3D1C7" stroke="#888780" stroke-width="0.5"/>
+        <text x="340" y="451" text-anchor="middle" font-family="Arial" font-size="11" fill="#2C2C2A">Cycle 2 — circular feedstocks</text>
+      </g>
+      <g style="cursor:pointer" onclick="showDiagramTip(evt,'Cycle 3 — M18 to M30\nFull autonomous operation. Validates: stop/restart, continuous surfactin removal, oxygen management, yield optimisation. Agricultural prototype campaign (link to BACIPRO). TRL 4-5 target reached.')">
+        <rect x="452" y="432" width="172" height="30" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>
+        <text x="538" y="451" text-anchor="middle" font-family="Arial" font-size="11" fill="#26215C">Cycle 3 — full autonomy</text>
+      </g>
+      <line x1="228" y1="447" x2="254" y2="447" stroke="#888" stroke-width="1" marker-end="url(#da2)"/>
+      <line x1="426" y1="447" x2="452" y2="447" stroke="#888" stroke-width="1" marker-end="url(#da2)"/>
+    </svg>
+  </div>
+</div>
+
+<!-- EFQM -->
+<div class="content" id="tab-efqm">
+  <div class="note"><strong>EFQM w SURFactory</strong> — Model EFQM 2020 jest frameworkiem zarządzania ciągłym doskonaleniem wdrożonym przez Fundację Rozwoju UE Wrocław, jedyną organizację w Polsce z trzema statusami EFQM jednocześnie. W projekcie pełni rolę warstwy governance — spaja pętlę DBTL, Digital Twin i replikowalność dla MŚP.</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Co to jest EFQM Model 2020</div>
+      <p style="font-size:13px;line-height:1.7;margin-bottom:12px">Model EFQM (European Foundation for Quality Management) to niepreskryptywny standard doskonałości organizacyjnej, który integruje przywództwo, strategię, ludzi, partnerstwa, procesy, innowacje i wyniki. Ocena opiera się na logice RADAR (Results, Approaches, Deploy, Assess and Refine).</p>
+      <p style="font-size:13px;line-height:1.7;margin-bottom:12px">Model 2020 organizuje doskonałość w <strong>trzech wymiarach</strong> i <strong>siedmiu kryteriach</strong>:</p>
+      <div class="status-item"><div class="status-dot" style="background:#1F4E79"></div><div class="status-text"><strong>Direction — Kierunek (Dlaczego?)</strong><span>Kryterium 1: Purpose, Vision &amp; Strategy — jasność celu, strategia, dopasowanie do potrzeb interesariuszy.<br>Kryterium 2: Organisational Culture &amp; Leadership — wartości, przywództwo, governance i etyka.</span></div></div>
+      <div class="status-item"><div class="status-dot" style="background:#534AB7"></div><div class="status-text"><strong>Execution — Wykonanie (Jak?)</strong><span>Kryterium 3: Engaging Stakeholders — tworzenie wartości z klientami, ludźmi, partnerami, społeczeństwem.<br>Kryterium 4: Creating Sustainable Value — procesy, produkty, usługi.<br>Kryterium 5: Driving Performance &amp; Transformation — innowacje, technologie, zarządzanie wynikami.</span></div></div>
+      <div class="status-item"><div class="status-dot" style="background:#1D9E75"></div><div class="status-text"><strong>Results — Wyniki (Co?)</strong><span>Kryterium 6: Stakeholder Perceptions — jak interesariusze postrzegają organizację.<br>Kryterium 7: Strategic &amp; Operational Performance — osiągnięte wyniki strategiczne i operacyjne.</span></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Fundacja Rozwoju UE Wrocław — partner EFQM</div>
+      <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>EFQM Certified Recognition Organisation</strong><span>Jedyna organizacja w Polsce z tym statusem. Uprawniona do przeprowadzania oficjalnych ocen EFQM i przyznawania recognitions.</span></div></div>
+      <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>EFQM Certified Training Organisation</strong><span>Uprawniona do prowadzenia oficjalnych szkoleń EFQM — assessorów, liderów doskonałości, RADAR workshops.</span></div></div>
+      <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>EFQM Advisor Organisation</strong><span>Uprawniona do świadczenia doradztwa w zakresie wdrożenia modelu EFQM w organizacjach.</span></div></div>
+      <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Projekty studenckie i living labs</strong><span>Wdraża student-driven living labs i challenge-based co-creation dla aspektów społecznych i środowiskowych — bez zwiększania liczby polskich beneficjentów (linked third party).</span></div></div>
+      <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Sprawdzone w BACIPRO</strong><span>Podejście EFQM zostało zastosowane w projekcie BACIPRO i docenione przez recenzentów — bezpośredni precedens dla SURFactory.</span></div></div>
+      <a href="https://fundacja.ue.wroc.pl/" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;color:#1F4E79">→ fundacja.ue.wroc.pl</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Jak EFQM/RADAR działa w SURFactory — mapowanie na projekt</div>
+    <table class="kpi-table">
+      <tr><th>Wymiar EFQM</th><th>Kryterium</th><th>Zastosowanie w SURFactory</th></tr>
+      <tr><td style="font-weight:600;color:#1F4E79">Direction</td><td>Purpose, Vision &amp; Strategy</td><td style="font-size:12px">Strategiczne pozycjonowanie SURFactory jako European industrial competitiveness project. Trzy luki rynkowe jako uzasadnienie kierunku. Cel: SME-deployable circular bioprocessing.</td></tr>
+      <tr><td style="font-weight:600;color:#1F4E79">Direction</td><td>Culture &amp; Leadership</td><td style="font-size:12px">DBTL jako kultura iteracyjnego uczenia się. Profesor Łukaszewicz jako lider naukowy. Governance projektu oparte na evidence-based decision-making.</td></tr>
+      <tr><td style="font-weight:600;color:#534AB7">Execution</td><td>Engaging Stakeholders</td><td style="font-size:12px">Policy Labs (WP5): NGOs, growers, SMEs, regulators. Open Innovation Access Programme. SSH integration. Association of Polish Nurserymen jako end-user.</td></tr>
+      <tr><td style="font-weight:600;color:#534AB7">Execution</td><td>Creating Sustainable Value</td><td style="font-size:12px">Digital Twin jako narzędzie tworzenia wartości: redukcja off-spec campaigns, skrócenie cyklu, poprawa yield. SSbD/DNSH embedded from day one.</td></tr>
+      <tr><td style="font-weight:600;color:#534AB7">Execution</td><td>Driving Performance &amp; Transformation</td><td style="font-size:12px">RADAR assessments na każdym milestone projektu. KPI R1–R6 jako system śledzenia wyników. EFQM/RADAR replication toolkit dla MŚP (WP5).</td></tr>
+      <tr><td style="font-weight:600;color:#1D9E75">Results</td><td>Stakeholder Perceptions</td><td style="font-size:12px">Policy Labs walidują rekomendacje z regulatorami, przemysłem, SMEs, rolnikami i społeczeństwem obywatelskim. Consumer acceptance studies (WP5).</td></tr>
+      <tr><td style="font-weight:600;color:#1D9E75">Results</td><td>Strategic &amp; Operational Performance</td><td style="font-size:12px">R1–R6: CV ≥30%, titre ≥40 g/L, N+P+S recovery ≥70%, ≥8 SMEs, ≥3 policy briefs. Payback 12–24 months. LCA ≥25–40% improvement.</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Tekst do wniosku — sekcja Methodology (gotowy fragment)</div>
+    <div class="note" style="background:#f8f7f4;border-left-color:#444">
+      <p style="font-size:13px;line-height:1.8"><strong>EFQM/RADAR governance methodology</strong></p>
+      <p style="font-size:13px;line-height:1.8;margin-top:8px">SURFactory applies the EFQM 2020 Model as its continuous improvement governance framework, implemented by the Wroclaw University of Economics Foundation — the only organisation in Poland simultaneously holding EFQM Certified Recognition Organisation, Certified Training Organisation and Advisor Organisation status. This unique combination of competences ensures that EFQM is not applied as a formal compliance exercise, but as an operational excellence tool embedded in daily project decisions.</p>
+      <p style="font-size:13px;line-height:1.8;margin-top:8px">The EFQM Direction–Execution–Results logic is mapped directly onto the project architecture: <em>Direction</em> corresponds to the strategic positioning of the Digital Twin as an SME-accessible industrial competitiveness tool and the definition of the DBTL learning loop as the project's core operating logic; <em>Execution</em> corresponds to pilot campaigns, model recalibration cycles, stakeholder co-creation sprints and Open Innovation Access Programme onboarding; <em>Results</em> are tracked through the R1–R6 KPI framework with RADAR assessments conducted at each project milestone.</p>
+      <p style="font-size:13px;line-height:1.8;margin-top:8px">The RADAR logic (Results → Approaches → Deploy → Assess → Refine) ensures that deviations from KPI targets trigger structured corrective actions rather than ad hoc responses, and that all validated process and Digital Twin outputs are documented in replicable, evidence-based formats suitable for SME deployment and policy evidence packages. Student-led living labs at the Wroclaw University of Economics Foundation implement challenge-based co-creation activities, integrating societal and environmental acceptance considerations into daily project decisions rather than treating them as end-of-project communication tasks.</p>
+      <p style="font-size:13px;line-height:1.8;margin-top:8px">This approach has been successfully applied in the BACIPRO project within the same consortium and received positive recognition from reviewers — providing a validated precedent for its application in SURFactory at a larger scale and with broader European reach.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Dlaczego EFQM wzmacnia wniosek — argumenty dla ewaluatora</div>
+    <div class="gap-item gap-low" style="margin-bottom:8px"><div class="glabel" style="color:#1F4E79;min-width:60px">Arg 1</div><div class="gtext"><strong>Call wymaga evidence-based governance</strong><span>Scope mówi o "disciplined KPI management" i "replicability by SMEs". EFQM/RADAR jest konkretną, uznaną metodą która to dostarcza — nie deklaracją, lecz certyfikowanym frameworkiem z dedykowanym partnerem.</span></div></div>
+    <div class="gap-item gap-low" style="margin-bottom:8px"><div class="glabel" style="color:#1F4E79;min-width:60px">Arg 2</div><div class="gtext"><strong>Unikalny partner</strong><span>Fundacja Rozwoju UE to jedyna organizacja w Polsce z trzema statusami EFQM jednocześnie. Trudno to podważyć i trudno zduplikować — wzmacnia unikalność konsorcjum.</span></div></div>
+    <div class="gap-item gap-low" style="margin-bottom:8px"><div class="glabel" style="color:#1F4E79;min-width:60px">Arg 3</div><div class="gtext"><strong>Precedens w BACIPRO</strong><span>Ten sam konsorcjum stosował EFQM w BACIPRO z pozytywną oceną recenzentów. To jest dowód wykonania, nie obietnica.</span></div></div>
+    <div class="gap-item gap-low" style="margin-bottom:8px"><div class="glabel" style="color:#1F4E79;min-width:60px">Arg 4</div><div class="gtext"><strong>Spaja narrację projektu</strong><span>DBTL to pętla techniczna. Digital Twin to narzędzie operacyjne. EFQM/RADAR to warstwa governance która łączy jedno z drugim i zapewnia że wyniki są dokumentowane, oceniane i replikowalne — dokładnie to czego call wymaga dla SME replication.</span></div></div>
+    <div class="gap-item gap-low"><div class="glabel" style="color:#1F4E79;min-width:60px">Arg 5</div><div class="gtext"><strong>Zgodność z Industry 5.0</strong><span>EFQM 2020 był walidowany w kontekście Industry 4.0/5.0 — kryterium 2.3 (Enable Creativity &amp; Innovation) i 5.3 (Drive Innovation &amp; Utilise Technology) bezpośrednio odpowiadają na digitalizację i AI w bioprodukcji.</span></div></div>
+  </div>
+</div>
+
+<!-- PARTNER PROFILES -->
+<div class="content" id="tab-profiles">
+  <div class="note"><strong>Profile partnerów</strong> — szczegółowe informacje o potwierdzonych partnerach konsorcjum, ich kompetencjach i roli w projekcie. Przydatne do sekcji 3.2 (Capacity of participants) w Part B.</div>
+
+  <!-- InventionBio -->
+  <div class="card">
+    <div class="card-title">InventionBio S.A. — WP3 Leader · Pilot partner</div>
+    <div class="grid-2">
+      <div>
+        <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Pełna nazwa i forma prawna</strong><span>InventionBio S.A. (dawniej Boruta-Zachem Biochemia Sp. z o.o., przekształcona 23.12.2020 r.)</span></div></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Lokalizacja</strong><span>ul. Jakóba Hechlińskiego 4, 85-825 Bydgoszcz, Polska</span></div></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Charakter organizacji</strong><span>Spółka akcyjna — SME. Biorafinery, fermentacja, biotechnologia przemysłowa. Finansowana m.in. przez PARP i NCBR.</span></div></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Certyfikaty</strong><span>GMP+ (Good Manufacturing Practice) — potwierdza zdolność do produkcji zgodnej z wymogami bezpieczeństwa pasz i bioproduktów na każdym etapie.</span></div></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Infrastruktura pilotowa</strong><span>Dwa bioreaktory Boccard 300L (470L objętość całkowita), Siemens ET200SP PLC, Profinet, HMI TP1200. Projektowane do pracy 24/7. Jedyne takie bioreaktory w Polsce w tym zastosowaniu.</span></div></div>
+        <a href="https://inventionbio.pl/" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;color:#1F4E79">→ inventionbio.pl</a>
+      </div>
+      <div>
+        <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Kompetencje kluczowe dla SURFactory</strong><span>Scale-up fermentacji w bioreaktorach płynnych i stałych. Produkcja kontraktowa. Biosurfaktanty (InBioSur). Analityka chemiczna i mikrobiologiczna. Transfer wiedzy nauka–biznes.</span></div></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Produkt InBioSur</strong><span>Biosurfaktant w portfolio produktów InventionBio — bezpośredni dowód kompetencji w produkcji biosurfaktantów na skalę przemysłową.</span></div></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Aktualny projekt: SŁOMACTIVE</strong><span>Wspólnie z Grupą Azoty uruchomiono produkcję SŁOMACTIVE — mikrobiologicznego preparatu z Trichoderma i Bacillus z biosurfaktantami dla rolnictwa regeneratywnego. Bezpośredni precedens dla SURFactory w kontekście Nature-based Solutions.</span></div></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Kontakt operacyjny dla WP2</strong><span>Fabian Kuczyński — kierownik produkcji (tel. 578 520 043). Kluczowa osoba do rozmów o architekturze danych i dostępie do sygnałów z PLC.</span></div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px">
+      <div class="card-title" style="margin-bottom:8px">Portfolio produktów (relevanty dla SURFactory)</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <span class="wp-tag tag-teal" style="font-size:11px;padding:4px 10px">InBioSur — biosurfaktant</span>
+        <span class="wp-tag tag-teal" style="font-size:11px;padding:4px 10px">InBioYeast Extract — ekstrakt drożdżowy</span>
+        <span class="wp-tag tag-teal" style="font-size:11px;padding:4px 10px">InBioBacFiltrate — filtrat Bacillus</span>
+        <span class="wp-tag tag-teal" style="font-size:11px;padding:4px 10px">InBioNano — nanoemulsje</span>
+        <span class="wp-tag tag-green" style="font-size:11px;padding:4px 10px">SŁOMACTIVE — rolnictwo regeneratywne</span>
+        <span class="wp-tag tag-amber" style="font-size:11px;padding:4px 10px">NutriBio* — komponenty paszowe</span>
+      </div>
+    </div>
+
+    <div style="margin-top:14px">
+      <div class="card-title" style="margin-bottom:8px">Tekst do sekcji 3.2 (Capacity of participants)</div>
+      <div class="note" style="background:#f8f7f4;border-left-color:#444;margin-bottom:0">
+        <p style="font-size:13px;line-height:1.8">InventionBio S.A. (Bydgoszcz, Poland) is a GMP+-certified industrial biotechnology company and the pilot infrastructure partner of SURFactory, leading WP3. The company operates the project's primary demonstration asset: two fully automated 300L bioreactors (Boccard) equipped with Siemens ET200SP PLC and Profinet infrastructure, designed for continuous 24/7 operation. InventionBio has an established track record in biosurfactant production (InBioSur product line) and scale-up fermentation in both liquid and solid-state bioreactors, supported by PARP and NCBR funding. The company has recently initiated production of SŁOMACTIVE — a microbial preparation based on Trichoderma, Bacillus and biosurfactants for regenerative agriculture — in partnership with Grupa Azoty, demonstrating the direct commercial relevance of biosurfactant bioproduction for Nature-based Solutions in the agricultural sector. InventionBio provides the project with pilot-scale validation capacity, industrial operability expertise, and the process data infrastructure required for Digital Twin calibration and validation.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fundacja Rozwoju UE -->
+  <div class="card">
+    <div class="card-title">Fundacja Rozwoju UE Wrocław — Linked Third Party · EFQM governance</div>
+    <div class="grid-2">
+      <div>
+        <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Status prawny w projekcie</strong><span>Linked Third Party (przez Wroclaw University of Economics) — nie zwiększa liczby polskich beneficjentów.</span></div></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Lokalizacja</strong><span>ul. Komandorska 118/120, 53-345 Wrocław. Powiązana z Uniwersytetem Ekonomicznym we Wrocławiu.</span></div></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>EFQM Certified Recognition Organisation</strong><span>Jedyna w Polsce. Uprawniona do oficjalnych ocen EFQM i przyznawania recognitions organizacjom.</span></div></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>EFQM Certified Training Organisation</strong><span>Prowadzi oficjalne szkolenia EFQM: assessorzy, liderzy doskonałości, RADAR workshops.</span></div></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>EFQM Advisor Organisation</strong><span>Doradztwo we wdrożeniu modelu EFQM. Jedyna organizacja w Polsce z wszystkimi trzema statusami jednocześnie.</span></div></div>
+        <a href="https://fundacja.ue.wroc.pl/" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;color:#1F4E79">→ fundacja.ue.wroc.pl</a>
+      </div>
+      <div>
+        <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Rola w SURFactory</strong><span>Wdrożenie EFQM/RADAR-based societal &amp; environmental performance management. Student-led living labs. Challenge-based co-creation. EFQM/RADAR replication toolkit dla MŚP.</span></div></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Projekty studenckie</strong><span>Studenci UEW realizują challenge-based projekty we współpracy z biznesem — format living lab integruje aspekty społeczne i środowiskowe w codzienne decyzje projektowe.</span></div></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Konferencje i seminaria</strong><span>Organizuje cykliczne konferencje QSE (qse.ue.wroc.pl) w zakresie zarządzania jakością i doskonałością biznesową — sieć dla disseminacji wyników SURFactory.</span></div></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Precedens BACIPRO</strong><span>EFQM zastosowany w BACIPRO — doceniony przez recenzentów. Bezpośredni dowód skuteczności podejścia w projektach UE z tym samym konsorcjum.</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WP2 leader -->
+  <div class="card">
+    <div class="card-title">InventionBio S.A. — WP2 Leader · Digital Twin</div>
+    <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Rola w projekcie</strong><span>Odpowiedzialna za Digital Twin — architekturę, warstwę AI/ML, integrację danych procesowych, automatyzację i framework OT/IT. Działa w ramach InventionBio S.A. jako partnera prowadzącego WP2 i WP3.</span></div></div>
+    <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Kluczowa synergia</strong><span>Połączenie dostępu do fizycznej infrastruktury pilotowej (bioreaktory 300L w Bydgoszczy) z kompetencjami Digital Twin i AI/ML w jednej organizacji. Eliminuje barierę integracji OT/IT, która blokuje większość wdrożeń twin w MŚP.</span></div></div>
+    <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Infrastruktura dostępna dla WP2</strong><span>Siemens ET200SP 1510SP-1 PN, protokół Profinet, falowniki G120C, wyspy zaworowe Festo VTUG, HMI TP1200 Comfort. Dokumentacja techniczna od Boccard (HDS, DMD, P&ID).</span></div></div>
+    <div class="status-item"><div class="status-dot dot-green"></div><div class="status-text"><strong>Punkt startowy modelu</strong><span>Mechanistyczny model biosyntezy surfaktyny (University of Hohenheim) + warstwa AI/ML trenowana na danych DBTL z pilota. Nie budujemy od zera — integrujemy istniejący model naukowy z danymi przemysłowymi.</span></div></div>
+  </div>
+</div>
+
+<div id="dtip" style="position:fixed;background:#1a1a18;color:#fff;padding:10px 14px;border-radius:8px;font-size:12px;pointer-events:none;opacity:0;transition:opacity 0.2s;max-width:280px;line-height:1.6;z-index:999;white-space:pre-line"></div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function showDiagramTip(evt, text) {
+  const tip = document.getElementById('dtip');
+  tip.textContent = text;
+  tip.style.opacity = '1';
+  let x = evt.clientX + 16, y = evt.clientY + 12;
+  if (x + 290 > window.innerWidth) x = evt.clientX - 300;
+  if (y + 200 > window.innerHeight) y = evt.clientY - 210;
+  tip.style.left = x + 'px';
+  tip.style.top = y + 'px';
+  setTimeout(() => { tip.style.opacity = '0'; }, 4000);
+}
+
+// Animate progress bars on load
+window.addEventListener('load', () => {
+  document.querySelectorAll('.progress-fill').forEach(bar => {
+    const w = bar.style.width;
+    bar.style.width = '0';
+    setTimeout(() => { bar.style.width = w; }, 100);
+  });
+});
+</script>
+</body>
+</html>
